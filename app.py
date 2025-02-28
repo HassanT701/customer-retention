@@ -11,11 +11,17 @@ df = pd.read_csv('churn.csv')
 customers = [f"{row['CustomerId']} - {row['Surname']}" for _, row in df.iterrows()]
 
 # Load models
-models = {
-    "XGBoost Feature Engineered": pickle.load(open('models/xgboost-featureEngineered.pkl', "rb")),
-    "XGBoost SMOTE": pickle.load(open('models/xgboost-SMOTE.pkl', "rb")),
-    "Voting Classifier": pickle.load(open('models/voting_clf.pkl', "rb"))
+# Load models using relative paths
+model_paths = {
+    "XGBoost Feature Engineered": "models/xgboost-featureEngineered.pkl",
+    "XGBoost SMOTE": "models/xgboost-SMOTE.pkl",
+    "Voting Classifier": "models/voting_clf.pkl"
 }
+
+models = {}
+for name, path in model_paths.items():
+    with open(path, "rb") as file:
+        models[name] = pickle.load(file)
 
 # Hugging Face API configuration
 HF_API_URL = "https://api-inference.huggingface.co/models/google/flan-t5-large"
