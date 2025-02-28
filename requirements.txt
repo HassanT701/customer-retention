@@ -3,5 +3,5 @@ pandas
 matplotlib
 plotly
 scikit-learn
-xgboost==1.26.4
+xgboost==2.1.4
 requests
