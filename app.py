@@ -14,7 +14,7 @@ customers = [f"{row['CustomerId']} - {row['Surname']}" for _, row in df.iterrows
 models = {
     "XGBoost Feature Engineered": pickle.load(open('models/xgboost-featureEngineered.pkl', "rb")),
     "XGBoost SMOTE": pickle.load(open('models/xgboost-SMOTE.pkl', "rb")),
-    "Voting Classifier": pickle.load(open('models/voting_clf.pkl', "rb"))
+    #"Voting Classifier": pickle.load(open('models/voting_clf.pkl', "rb"))
 }
 
 # Hugging Face API configuration
