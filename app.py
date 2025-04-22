@@ -19,8 +19,8 @@ models = {
 }
 
 # Hugging Face API configuration
-HF_API_URL = "https://api-inference.huggingface.co/models/google/flan-t5-large"
-HF_API_KEY = os.getenv("HF_API_KEY")  
+HF_API_KEY = st.secrets["HF_API_KEY"]
+HF_API_URL = st.secrets["HF_API_URL"]
 
 # State management
 if 'predictions' not in st.session_state:
