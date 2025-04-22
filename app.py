@@ -114,56 +114,50 @@ if selected_customer:
 
     # Explanation Section
     st.subheader("Model Explanation")
-    
+
     if st.session_state.prediction_made and st.button("Generate Explanation"):
         try:
+            # Construct the prompt in instruction format
+            prediction_label = "churn" if st.session_state.predictions['Voting Classifier'] > 50 else "retention"
+
             prompt = f"""
-            As a data scientist, provide a technical explanation of why the Voting Classifier predicted {'churn' if st.session_state.predictions['Voting Classifier'] > 50 else 'retention'}.
-            Focus on these specific factors:
-            
-            - Credit Score: {credit_score} ({'low' if credit_score < 650 else 'average' if credit_score < 750 else 'high'})
-            - Account Balance: ${balance:,.2f}
-            - Tenure: {tenure} years
-            - Active Member: {'Yes' if is_active_member else 'No'}
-            
-            Include both:
-            1. Technical aspects of the Voting Classifier (ensemble of XGBoost, Random Forest, SVC)
-            2. Feature weight analysis based on the input values
-            
-            Avoid assumptions about bank programs or unverified details.
-            """
-            
+    Explain why a Voting Classifier predicted customer {prediction_label} based on the following features:
+
+    - Credit Score: {credit_score} ({'low' if credit_score < 650 else 'average' if credit_score < 750 else 'high'})
+    - Account Balance: ${balance:,.2f}
+    - Tenure: {tenure} years
+    - Active Member: {'Yes' if is_active_member else 'No'}
+
+    Briefly describe how these features influence the prediction. Mention the ensemble model consisting of XGBoost, Random Forest, and SVC. Keep the explanation concise and easy to understand.
+    """
+
             headers = {"Authorization": f"Bearer {HF_API_KEY}"}
             payload = {
                 "inputs": prompt,
                 "parameters": {
-                    "max_length": 350,
-                    "temperature": 0.6,
-                    "do_sample": True,
-                    "top_k": 40,
-                    "top_p": 0.85,
-                    "repetition_penalty": 1.6
+                    "max_length": 300,
+                    "temperature": 0.7,
+                    "top_k": 50,
+                    "top_p": 0.9,
+                    "repetition_penalty": 1.4
                 }
             }
 
             response = requests.post(HF_API_URL, headers=headers, json=payload)
-            
-            if response.status_code == 200:
-                explanation = response.json()[0]['generated_text']
-                
-                # Clean response
-                explanation = explanation.replace("rewards program", "").strip()
-                explanation = explanation.replace("BB&T", "").strip()
-                explanation = explanation.split("As a data scientist")[0].strip()
-                
-                explanation += "\n(Additional factors may include product usage patterns and regional competition)"
 
-                # Add technical note about Voting Classifier
-                explanation += "\n\nTechnical Note: The Voting Classifier combines predictions from XGBoost, Random Forest, and Support Vector Machine models using weighted averaging."
-                
-                st.write(f"### Explanation")
+            if response.status_code == 200:
+                result = response.json()
+                if isinstance(result, list) and len(result) > 0:
+                    explanation = result[0].get("generated_text", "").strip()
+                else:
+                    explanation = "No explanation generated. Please try again."
+
+                # Add technical note
+                explanation += "\n\nTechnical Note: The Voting Classifier combines predictions from XGBoost, Random Forest, and Support Vector Machine models using majority voting."
+
+                st.write("### Explanation")
                 st.write(explanation)
-                
+
             elif "CUDA out of memory" in response.text:
                 st.error("System busy - please try generating the explanation again")
                 st.button("Retry Explanation")
